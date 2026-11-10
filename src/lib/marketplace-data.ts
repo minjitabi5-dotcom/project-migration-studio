@@ -24,6 +24,8 @@ export type GuideListing = Pick<
   audience?: string;
   contents?: string;
   coffee_url?: string;
+  free_attachment_name?: string | null;
+  free_attachment_size_bytes?: number | null;
   sample?: boolean;
 };
 

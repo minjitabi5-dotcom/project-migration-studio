@@ -9,7 +9,9 @@ import {
   type GuideListing,
 } from "@/lib/marketplace-data";
 import { supabase } from "@/integrations/supabase/client";
-import { GuideAccessPanel, GuideCommunity } from "@/components/guide-access";
+import { GuideAccessPanel } from "@/components/guide-access";
+import { ProductReviews } from "@/components/product-reviews";
+import { FreeAttachmentButton } from "@/components/free-attachment";
 import { AskCreatorButton, PublicAnswers } from "@/components/ask-creator";
 import { ProductOutline } from "@/components/playbook/product-outline";
 import { CreatorCredentials } from "@/components/creator-credentials";
@@ -22,7 +24,7 @@ export const Route = createFileRoute("/guide/$slug")({
     const { data: guide, error } = await supabase
       .from("guides")
       .select(
-        "id, slug, title, summary, description, category, format, reading_time_minutes, price_cents, currency_code, creator_id, created_at, tags, outcomes, thumbnail_path",
+        "id, slug, title, summary, description, category, format, reading_time_minutes, price_cents, currency_code, creator_id, created_at, tags, outcomes, thumbnail_path, free_attachment_name, free_attachment_size_bytes",
       )
       .eq("slug", params.slug)
       .eq("status", "published")
@@ -205,6 +207,13 @@ function GuideDetailPage() {
             priceCents={guide.price_cents}
             isSample={isSample}
           />
+          {!isSample && guide.free_attachment_name && (
+            <FreeAttachmentButton
+              guideId={guide.id}
+              fileName={guide.free_attachment_name}
+              sizeBytes={guide.free_attachment_size_bytes ?? null}
+            />
+          )}
           {!isSample && <SaveProductButton guideId={guide.id} />}
           {!isSample && (
             <AskCreatorButton guideId={guide.id} guideTitle={guide.title} creatorName={guide.creator_name} />
@@ -223,7 +232,7 @@ function GuideDetailPage() {
         </aside>
       </section>
       {!isSample && <PublicAnswers guideId={guide.id} />}
-      {!isSample && <GuideCommunity guideId={guide.id} />}
+      {!isSample && <ProductReviews guideId={guide.id} creatorId={guide.creator_id} />}
       <section className="detail-afterword">
         <h2>More useful know-how</h2>
         <p>Browse practical resources from independent creators across different fields.</p>
