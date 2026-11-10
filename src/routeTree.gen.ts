@@ -21,6 +21,7 @@ import { Route as PoliciesRouteImport } from './routes/policies'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as CreatorsCreatorIdRouteImport } from './routes/creators.$creatorId'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard.analytics'
 import { Route as DashboardProfileRouteImport } from './routes/dashboard.profile'
@@ -93,6 +94,11 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CreatorsCreatorIdRoute = CreatorsCreatorIdRouteImport.update({
+  id: '/creators/$creatorId',
+  path: '/creators/$creatorId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -163,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
+  '/creators/$creatorId': typeof CreatorsCreatorIdRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/questions': typeof DashboardQuestionsRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
+  '/creators/$creatorId': typeof CreatorsCreatorIdRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/questions': typeof DashboardQuestionsRoute
@@ -213,6 +221,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
+  '/creators/$creatorId': typeof CreatorsCreatorIdRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/questions': typeof DashboardQuestionsRoute
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/terms'
+    | '/creators/$creatorId'
     | '/dashboard/analytics'
     | '/dashboard/profile'
     | '/dashboard/questions'
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/terms'
+    | '/creators/$creatorId'
     | '/dashboard/analytics'
     | '/dashboard/profile'
     | '/dashboard/questions'
@@ -289,6 +300,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/terms'
+    | '/creators/$creatorId'
     | '/dashboard/analytics'
     | '/dashboard/profile'
     | '/dashboard/questions'
@@ -315,6 +327,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
+  CreatorsCreatorIdRoute: typeof CreatorsCreatorIdRoute
   GetTokenRoute: typeof GetTokenRoute
   GuideSlugRoute: typeof GuideSlugRoute
 }
@@ -403,6 +416,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creators/$creatorId': {
+      id: '/creators/$creatorId'
+      path: '/creators/$creatorId'
+      fullPath: '/creators/$creatorId'
+      preLoaderRoute: typeof CreatorsCreatorIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/': {
@@ -526,6 +546,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
+  CreatorsCreatorIdRoute: CreatorsCreatorIdRoute,
   GetTokenRoute: GetTokenRoute,
   GuideSlugRoute: GuideSlugRoute,
 }
