@@ -517,6 +517,10 @@ export type Database = {
           file_path: string | null
           file_size_bytes: number | null
           format: string
+          free_attachment_mime: string | null
+          free_attachment_name: string | null
+          free_attachment_path: string | null
+          free_attachment_size_bytes: number | null
           guide_id: string
           how_to_use: string
           id: string
@@ -559,6 +563,10 @@ export type Database = {
           file_path?: string | null
           file_size_bytes?: number | null
           format?: string
+          free_attachment_mime?: string | null
+          free_attachment_name?: string | null
+          free_attachment_path?: string | null
+          free_attachment_size_bytes?: number | null
           guide_id: string
           how_to_use?: string
           id?: string
@@ -601,6 +609,10 @@ export type Database = {
           file_path?: string | null
           file_size_bytes?: number | null
           format?: string
+          free_attachment_mime?: string | null
+          free_attachment_name?: string | null
+          free_attachment_path?: string | null
+          free_attachment_size_bytes?: number | null
           guide_id?: string
           how_to_use?: string
           id?: string
@@ -658,6 +670,10 @@ export type Database = {
           file_path: string | null
           first_downloaded_at: string | null
           format: string
+          free_attachment_mime: string | null
+          free_attachment_name: string | null
+          free_attachment_path: string | null
+          free_attachment_size_bytes: number | null
           how_to_use: string
           id: string
           limitations: string
@@ -693,6 +709,10 @@ export type Database = {
           file_path?: string | null
           first_downloaded_at?: string | null
           format?: string
+          free_attachment_mime?: string | null
+          free_attachment_name?: string | null
+          free_attachment_path?: string | null
+          free_attachment_size_bytes?: number | null
           how_to_use?: string
           id?: string
           limitations?: string
@@ -728,6 +748,10 @@ export type Database = {
           file_path?: string | null
           first_downloaded_at?: string | null
           format?: string
+          free_attachment_mime?: string | null
+          free_attachment_name?: string | null
+          free_attachment_path?: string | null
+          free_attachment_size_bytes?: number | null
           how_to_use?: string
           id?: string
           limitations?: string
@@ -1502,6 +1526,14 @@ export type Database = {
           guide_id: string
           paid_orders: number
           revenue_cents: number
+        }[]
+      }
+      creator_public_stats: {
+        Args: { p_creator_id: string }
+        Returns: {
+          avg_rating: number
+          products: number
+          reviews: number
         }[]
       }
       has_role: {
