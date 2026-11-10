@@ -351,7 +351,11 @@ function ManageProductPage() {
             </div>
             <div>
               <dt>File</dt>
-              <dd>{version.file_name ?? "—"}</dd>
+              <dd>{version.file_name ?? (version.format === "Playbook" ? "None — delivered through playbook sections" : "—")}</dd>
+            </div>
+            <div>
+              <dt>Free attachment</dt>
+              <dd>{version.free_attachment_name ?? "—"}</dd>
             </div>
           </dl>
           {editable && (
