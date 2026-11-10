@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1794307137484,
+      "tag": "0000_0000_marketplace_profiles_guides",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794307205085,
+      "tag": "0001_0001_prd_roles_catalog_versions",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794307255957,
+      "tag": "0002_0002_prd_orders_ledger_support_feedback",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794307359085,
+      "tag": "0003_0003_prd_workflow_functions",
+      "breakpoints": true
+    }
+  ]
+}
