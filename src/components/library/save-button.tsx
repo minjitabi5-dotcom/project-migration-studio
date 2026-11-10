@@ -37,7 +37,7 @@ export function SaveProductButton({ guideId }: { guideId: string }) {
       ? await supabase.from("saved_products").delete().eq("user_id", user.id).eq("guide_id", guideId)
       : await supabase.from("saved_products").insert({ user_id: user.id, guide_id: guideId });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     setSaved(!saved);
     toast.success(saved ? "Removed from your library." : "Saved to your library.");
   }
