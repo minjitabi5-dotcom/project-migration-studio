@@ -1,7 +1,7 @@
 import { categoryToneClass } from "@/lib/category-colors";
 import { useEffect, useState, type FormEvent } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { FileUp, ImagePlus, LoaderCircle, Send, Save, X } from "lucide-react";
+import { FileUp, Gift, ImagePlus, LoaderCircle, Send, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { slugifyGuideTitle } from "@/lib/marketplace-data";
 import {
+  FREE_ATTACHMENT_MAX_BYTES,
   PRODUCT_FILE_ACCEPT,
   PRODUCT_FILE_MAX_BYTES,
   PRODUCT_FORMATS,
@@ -73,6 +74,8 @@ export function ProductForm({ userId, version, onDone, onCancel }: Props) {
   const [thumbFile, setThumbFile] = useState<File | null>(null);
   const [thumbPreview, setThumbPreview] = useState("");
   const [productFile, setProductFile] = useState<File | null>(null);
+  const [freeFile, setFreeFile] = useState<File | null>(null);
+  const [removeFree, setRemoveFree] = useState(false);
   const [busy, setBusy] = useState<"" | "save" | "submit">("");
   const [error, setError] = useState("");
   const existingThumb = useThumbnailUrls([version?.thumbnail_path]);
@@ -147,6 +150,19 @@ export function ProductForm({ userId, version, onDone, onCancel }: Props) {
     setProductFile(file);
   }
 
+  function pickFreeFile(file: File | undefined) {
+    setError("");
+    if (!file) return;
+    if (!resolveProductMime(file.name, file.type)) {
+      return setError(
+        "That free attachment type isn’t supported. Use PDF, Word, Excel, CSV, PowerPoint, EPUB, ZIP, MP4/MOV, MP3 or an image.",
+      );
+    }
+    if (file.size > FREE_ATTACHMENT_MAX_BYTES) return setError("Free attachments must be 50 MB or smaller.");
+    setFreeFile(file);
+    setRemoveFree(false);
+  }
+
   async function save(submit: boolean) {
     setError("");
     if (title.trim().length < 5)
@@ -160,7 +176,9 @@ export function ProductForm({ userId, version, onDone, onCancel }: Props) {
     if (riskSensitive && sourcesNote.trim().length < 10) {
       return setError("This category needs sources, dates and cautions (at least 10 characters).");
     }
-    if (!productFile && !version?.file_path) return setError("Upload the product file.");
+    if (!productFile && !version?.file_path && format !== "Playbook") {
+      return setError("Upload the product file (or choose the Playbook type and add sections below).");
+    }
     const priceResult = parseProductPrice(pricing, price);
     if (!priceResult.ok) return setError(priceResult.error);
 
@@ -196,6 +214,31 @@ export function ProductForm({ userId, version, onDone, onCancel }: Props) {
           file_name: productFile.name,
           file_size_bytes: productFile.size,
           file_mime: mime,
+        };
+      }
+
+      if (freeFile) {
+        const mime = resolveProductMime(freeFile.name, freeFile.type)!;
+        const path = `${userId}/free/${crypto.randomUUID()}-${safeStorageName(freeFile.name)}`;
+        const { error: upErr } = await supabase.storage
+          .from("creator-guides")
+          .upload(path, freeFile, { contentType: mime, upsert: false });
+        if (upErr) throw new Error(`Free attachment upload failed: ${upErr.message}`);
+        uploaded.push({ bucket: "creator-guides", path });
+        fileFields = {
+          ...fileFields,
+          free_attachment_path: path,
+          free_attachment_name: freeFile.name,
+          free_attachment_size_bytes: freeFile.size,
+          free_attachment_mime: mime,
+        };
+      } else if (removeFree) {
+        fileFields = {
+          ...fileFields,
+          free_attachment_path: null,
+          free_attachment_name: null,
+          free_attachment_size_bytes: null,
+          free_attachment_mime: null,
         };
       }
 
@@ -506,6 +549,47 @@ export function ProductForm({ userId, version, onDone, onCancel }: Props) {
             <small>
               PDF, Word, Excel, CSV, PowerPoint, EPUB, ZIP, MP4/MOV video, MP3 audio or images. Up
               to 500 MB. Kept private until someone gets it.
+              {format === "Playbook" && " Optional for playbooks — you can deliver everything through sections."}
+            </small>
+          </div>
+          <div className="upload-box">
+            <span className="upload-label">
+              Free attachment <span className="field-hint">(optional)</span>
+            </span>
+            <div className="upload-file-name">
+              {freeFile
+                ? `${freeFile.name} · ${formatBytes(freeFile.size)}`
+                : version?.free_attachment_name && !removeFree
+                  ? `${version.free_attachment_name}${version.free_attachment_size_bytes ? ` · ${formatBytes(version.free_attachment_size_bytes)}` : ""}`
+                  : "No free attachment"}
+            </div>
+            <div className="upload-actions">
+              <label className="upload-button">
+                <input
+                  type="file"
+                  accept={PRODUCT_FILE_ACCEPT}
+                  onChange={(e) => pickFreeFile(e.target.files?.[0])}
+                />
+                <Gift aria-hidden="true" />{" "}
+                {freeFile || (version?.free_attachment_name && !removeFree) ? "Replace" : "Add free attachment"}
+              </label>
+              {(freeFile || (version?.free_attachment_name && !removeFree)) && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setFreeFile(null);
+                    setRemoveFree(true);
+                  }}
+                >
+                  <X aria-hidden="true" /> Remove
+                </Button>
+              )}
+            </div>
+            <small>
+              A sample chapter, checklist or worksheet anyone can download straight from your
+              product page — no email needed. Up to 50 MB.
             </small>
           </div>
         </div>

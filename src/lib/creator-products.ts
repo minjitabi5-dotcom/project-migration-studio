@@ -17,6 +17,7 @@ export const PRODUCT_FORMATS = [
 
 export const PRODUCT_FILE_MAX_BYTES = 500 * 1024 * 1024;
 export const THUMBNAIL_MAX_BYTES = 5 * 1024 * 1024;
+export const FREE_ATTACHMENT_MAX_BYTES = 50 * 1024 * 1024;
 
 const MIME_BY_EXTENSION: Record<string, string> = {
   pdf: "application/pdf",
