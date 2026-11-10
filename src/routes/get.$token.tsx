@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { downloadFromLink, getDownloadLinkInfo } from "@/lib/resource-delivery.functions";
 import { TOKEN_PATTERN } from "@/lib/download-links";
+import { downloadItemFromLink, getLinkContents, type LinkContentItem } from "@/lib/product-content.functions";
+import { PlaybookContent } from "@/components/playbook/playbook-content";
 
 export const Route = createFileRoute("/get/$token")({
   loader: ({ params }) =>
@@ -35,6 +37,20 @@ function DownloadPage() {
   const download = useServerFn(downloadFromLink);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const fetchContents = useServerFn(getLinkContents);
+  const downloadItem = useServerFn(downloadItemFromLink);
+  const [contents, setContents] = useState<{ hasMainFile: boolean; items: LinkContentItem[] } | null>(null);
+
+  useEffect(() => {
+    if (info.status !== "ok") return;
+    let active = true;
+    void fetchContents({ data: { token } })
+      .then((c) => active && setContents(c))
+      .catch(() => active && setContents({ hasMainFile: true, items: [] }));
+    return () => {
+      active = false;
+    };
+  }, [info.status, token, fetchContents]);
 
   async function start() {
     setBusy(true);
@@ -93,11 +109,26 @@ function DownloadPage() {
           ? `This link works until ${formatExpiry(info.expiresAt)}.`
           : "You can come back to this link from your email to download it again."}
       </p>
-      <div className="button-row">
-        <Button disabled={busy} onClick={() => void start()}>
-          <Download aria-hidden="true" /> {busy ? "Preparing…" : "Download"}
-        </Button>
-      </div>
+      {(!contents || contents.hasMainFile) && (
+        <div className="button-row">
+          <Button disabled={busy} onClick={() => void start()}>
+            <Download aria-hidden="true" /> {busy ? "Preparing…" : contents?.items.length ? "Download the main file" : "Download"}
+          </Button>
+        </div>
+      )}
+      {contents && contents.items.length > 0 && (
+        <div className="get-contents">
+          <h2>Everything in this product</h2>
+          <PlaybookContent
+            items={contents.items}
+            onDownload={async (itemId) => {
+              const r = await downloadItem({ data: { token, itemId } });
+              if ("url" in r) window.location.assign(r.url);
+              else return r.error;
+            }}
+          />
+        </div>
+      )}
       {error && (
         <p className="get-form-error" role="alert">
           {error}
