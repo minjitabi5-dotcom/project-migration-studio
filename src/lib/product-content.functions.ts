@@ -85,7 +85,7 @@ export type LinkContentItem = {
   file_name: string | null;
   url: string | null;
   tool_key: string | null;
-  tool_config: Record<string, unknown>;
+  tool_config: Record<string, string | number | boolean | null>;
 };
 
 const tokenSchema = z.object({ token: z.string().regex(TOKEN_PATTERN, "This link isn’t valid.") });

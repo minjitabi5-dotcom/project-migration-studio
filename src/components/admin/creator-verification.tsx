@@ -55,7 +55,7 @@ export function CreatorVerificationAdmin() {
       verified_by: auth.user.id,
     });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     toast.success(`${VERIFICATION_LABELS[kind]} added.`);
     void load();
   }
@@ -65,7 +65,7 @@ export function CreatorVerificationAdmin() {
     setBusy(true);
     const { error } = await supabase.from("creator_verifications").delete().eq("id", label.id);
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     void load();
   }
 

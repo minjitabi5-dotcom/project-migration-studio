@@ -56,7 +56,7 @@ export function LibraryNotesProgress({
       .from("library_notes")
       .upsert({ user_id: userId, guide_id: guideId, body: notes.slice(0, 10000), updated_at: new Date().toISOString() });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     setSavedNotes(notes);
     toast.success("Notes saved.");
   }
@@ -144,7 +144,7 @@ export function CollectionPicker({
       ? await supabase.from("collection_items").delete().eq("collection_id", c.id).eq("guide_id", guideId)
       : await supabase.from("collection_items").insert({ collection_id: c.id, guide_id: guideId, user_id: userId });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     onChanged();
   }
   if (!collections.length) return <p className="field-hint">Create a collection above to organise your resources.</p>;
@@ -198,7 +198,7 @@ export function NewCollectionForm({ userId, onCreated }: { userId: string; onCre
         setBusy(true);
         const { error } = await supabase.from("collections").insert({ user_id: userId, name: name.trim().slice(0, 60) });
         setBusy(false);
-        if (error) return toast.error(error.message);
+        if (error) return void toast.error(error.message);
         setName("");
         onCreated();
       }}

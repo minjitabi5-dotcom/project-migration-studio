@@ -114,7 +114,7 @@ export function PlaybookItemsEditor({
     setBusy(true);
     const { error } = await supabase.from("product_items").delete().eq("id", item.id);
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     toast.success("Item removed.");
     await load();
   }
@@ -139,12 +139,12 @@ export function PlaybookItemsEditor({
     e.preventDefault();
     if (!draft) return;
     const d = draft;
-    if (!d.title.trim()) return toast.error("Give the item a title.");
+    if (!d.title.trim()) return void toast.error("Give the item a title.");
     if ((d.kind === "video" || d.kind === "link") && !isHttpsUrl(d.url.trim())) {
-      return toast.error("Add a full https:// address.");
+      return void toast.error("Add a full https:// address.");
     }
-    if (d.kind === "text" && d.description.trim().length < 3) return toast.error("Write the note.");
-    if (d.kind === "file" && !d.file && !d.existingFileName) return toast.error("Choose a file to upload.");
+    if (d.kind === "text" && d.description.trim().length < 3) return void toast.error("Write the note.");
+    if (d.kind === "file" && !d.file && !d.existingFileName) return void toast.error("Choose a file to upload.");
     setBusy(true);
     try {
       let fileFields: Partial<Item> = {};
@@ -197,6 +197,7 @@ export function PlaybookItemsEditor({
       .createSignedUrl(item.file_path, 60, { download: item.file_name ?? true });
     if (error || !data) return "Couldn’t open the file.";
     window.location.assign(data.signedUrl);
+    return undefined;
   }
 
   const sorted = [...items].sort((a, b) => a.position - b.position);

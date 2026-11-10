@@ -374,8 +374,11 @@ function OwnedDetail({
             onToggleDone={(id) => void toggleDone(id)}
             onDownload={async (itemId) => {
               const r = await downloadItem({ data: { entitlementId: item.id, itemId } });
-              if ("url" in r) window.location.assign(r.url);
-              else return r.error;
+              if ("url" in r) {
+                window.location.assign(r.url);
+                return undefined;
+              }
+              return r.error;
             }}
           />
         </>

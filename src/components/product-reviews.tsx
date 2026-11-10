@@ -127,7 +127,7 @@ export function ProductReviews({ guideId, creatorId }: { guideId: string; creato
           comment: comment.trim(),
         });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     toast.success(mine ? "Review updated." : "Thanks for your review!");
     setWriting(false);
     setComment("");
@@ -137,7 +137,7 @@ export function ProductReviews({ guideId, creatorId }: { guideId: string; creato
   async function report() {
     if (!user) return setAuthOpen(true);
     const { error } = await supabase.from("support_cases").insert({ reporter_id: user.id, case_type: caseType, guide_id: guideId, details });
-    if (error) return toast.error(error.message.includes("check") ? "Please add at least 10 characters of detail." : error.message);
+    if (error) return void toast.error(error.message.includes("check") ? "Please add at least 10 characters of detail." : error.message);
     setDetails("");
     setReportOpen(false);
     toast.success("Thanks — our team will look into it.");
