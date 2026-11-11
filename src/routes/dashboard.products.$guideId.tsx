@@ -372,6 +372,12 @@ function ManageProductPage() {
         guideId={guide.id}
         creatorId={user.id}
         editable={editable && !editing}
+        outlineDefaults={{
+          title: version.title,
+          description: version.description || version.summary,
+          audience: version.audience,
+          goals: version.outcomes,
+        }}
       />
       <QualityReport versionId={version.id} audience="creator" />
 

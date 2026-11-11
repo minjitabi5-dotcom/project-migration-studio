@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import { ArrowDown, ArrowUp, Eye, EyeOff, LayoutList, LoaderCircle, Pencil, Plus, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Eye, EyeOff, LayoutList, LoaderCircle, Pencil, Plus, Sparkles, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,8 @@ import {
 } from "@/lib/playbook";
 import { KindIcon, PlaybookContent, type ContentItem } from "./playbook-content";
 import { InteractiveTool } from "./interactive-tool";
+import { OutlineAssistant } from "./outline-assistant";
+import type { OutlineInput } from "@/lib/playbook-outline";
 
 type Item = Tables<"product_items">;
 
@@ -60,16 +62,20 @@ export function PlaybookItemsEditor({
   guideId,
   creatorId,
   editable,
+  outlineDefaults,
 }: {
   versionId: string;
   guideId: string;
   creatorId: string;
   editable: boolean;
+  /** Prefills the AI outline helper from the product listing. */
+  outlineDefaults?: OutlineInput;
 }) {
   const [items, setItems] = useState<Item[] | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState(false);
+  const [planning, setPlanning] = useState(false);
 
   const load = useCallback(async () => {
     const { data, error } = await supabase
@@ -284,11 +290,26 @@ export function PlaybookItemsEditor({
                 onSubmit={save}
               />
             ) : (
-              <div>
-                <Button size="sm" variant="outline" onClick={() => setDraft(emptyDraft(sections.at(-1) ?? ""))}>
-                  <Plus aria-hidden="true" /> Add to playbook
-                </Button>
-              </div>
+              planning ? (
+                <OutlineAssistant
+                  versionId={versionId}
+                  guideId={guideId}
+                  creatorId={creatorId}
+                  nextPosition={(items ?? []).reduce((m, i) => Math.max(m, i.position + 1), 0)}
+                  defaults={outlineDefaults ?? { title: "", description: "", audience: "", goals: "" }}
+                  onAdded={load}
+                  onClose={() => setPlanning(false)}
+                />
+              ) : (
+                <div className="playbook-editor-buttons">
+                  <Button size="sm" variant="outline" onClick={() => setDraft(emptyDraft(sections.at(-1) ?? ""))}>
+                    <Plus aria-hidden="true" /> Add to playbook
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setPlanning(true)}>
+                    <Sparkles aria-hidden="true" /> {items.length ? "Plan more sections with AI" : "Plan the outline with AI"}
+                  </Button>
+                </div>
+              )
             )
           ) : (
             <p className="field-hint">

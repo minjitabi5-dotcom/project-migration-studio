@@ -929,3 +929,26 @@
   .creator-credentials { margin-left: 0; }
   .creator-page-head { align-items: flex-start; }
 }
+
+/* ===== Buyer access + AI outline helper ===== */
+.access-get { width: 100%; white-space: normal; }
+.access-email-toggle { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 13px; }
+.access-email-toggle svg { width: 15px; height: 15px; }
+.access-owned { display: grid; gap: 10px; }
+.access-owned-title { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--market-ocean); font-weight: 700; }
+.access-owned-title svg { width: 18px; height: 18px; color: var(--market-teal); }
+.access-owned-actions { display: grid; gap: 8px; }
+.playbook-editor-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.outline-assistant { display: grid; gap: 14px; margin-top: 8px; padding: 18px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.outline-assistant-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.outline-assistant-head h3 { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--market-ocean); font-size: 16px; font-weight: 700; }
+.outline-assistant-head h3 svg { width: 17px; height: 17px; color: var(--market-teal); }
+.outline-assistant-form { display: grid; gap: 14px; }
+.outline-draft { display: grid; gap: 14px; }
+.outline-draft-sections { display: grid; gap: 18px; margin: 0; padding-left: 22px; }
+.outline-draft-sections > li > input { font-weight: 700; }
+.outline-draft-sections ul { margin: 8px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--border); }
+.outline-draft-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.outline-draft-item strong { display: block; color: var(--foreground); font-size: 14px; }
+.outline-draft-item p { margin: 4px 0 0; color: var(--muted-foreground); font-size: 13px; line-height: 1.55; }
+.outline-kind { display: inline-block; margin-bottom: 3px; color: var(--market-teal); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }

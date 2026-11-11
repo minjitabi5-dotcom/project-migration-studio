@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { LockKeyhole, Mail, MailCheck } from "lucide-react";
+import { BookOpenCheck, Download, Library, LoaderCircle, LockKeyhole, Mail, MailCheck } from "lucide-react";
+import { MarketplaceAuthDialog } from "@/components/marketplace-auth-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMarketplaceAuth } from "@/hooks/use-marketplace-auth";
@@ -11,6 +12,12 @@ import { requestResourceByEmail } from "@/lib/resource-delivery.functions";
 import { PAID_LINK_HOURS } from "@/lib/download-links";
 
 type Entitlement = { id: string; version_id: string; guide_id: string };
+
+/** Lets every panel on the page (access, reviews, library tools) refresh after a product is added. */
+const ENTITLEMENT_EVENT = "doerly:entitlement-changed";
+export function announceEntitlementChange() {
+  window.dispatchEvent(new Event(ENTITLEMENT_EVENT));
+}
 
 export function useDownload() {
   const download = useServerFn(getResourceDownload);
@@ -39,14 +46,34 @@ export function useEntitlement(guideId: string) {
   useEffect(() => {
     if (ready) void refresh();
   }, [ready, refresh]);
-  return { user, entitlement, refresh };
+  useEffect(() => {
+    const onChange = () => void refresh();
+    window.addEventListener(ENTITLEMENT_EVENT, onChange);
+    return () => window.removeEventListener(ENTITLEMENT_EVENT, onChange);
+  }, [refresh]);
+  return { user, ready, entitlement, refresh };
 }
 
 export function GuideAccessPanel({ guideId, priceCents, isSample }: { guideId: string; priceCents: number; isSample: boolean }) {
-  const { user, entitlement } = useEntitlement(guideId);
+  const { user, ready, entitlement } = useEntitlement(guideId);
   const download = useDownload();
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const [hasFile, setHasFile] = useState(false);
+  const [showEmail, setShowEmail] = useState(false);
+
+  // Playbooks may have no single main file; only offer "Download" when there is one.
+  useEffect(() => {
+    if (!entitlement) return setHasFile(false);
+    void supabase
+      .from("guide_versions")
+      .select("file_name")
+      .eq("id", entitlement.version_id)
+      .maybeSingle()
+      .then(({ data }) => setHasFile(Boolean(data?.file_name)));
+  }, [entitlement]);
 
   async function doDownload() {
     if (!entitlement) return;
@@ -60,11 +87,52 @@ export function GuideAccessPanel({ guideId, priceCents, isSample }: { guideId: s
     setBusy(false);
   }
 
+  async function addToLibrary() {
+    setBusy(true);
+    setMsg("");
+    const { error } = await supabase.rpc("claim_free_resource", { p_guide_id: guideId });
+    setBusy(false);
+    if (error) return setMsg(error.message);
+    announceEntitlementChange();
+  }
+
+  function openAuth(mode: "signin" | "signup") {
+    setAuthMode(mode);
+    setAuthOpen(true);
+  }
+
   if (isSample)
     return (
       <Button className="purchase-unavailable" disabled>
         <LockKeyhole aria-hidden="true" /> Example listing
       </Button>
+    );
+
+  const authDialog = (
+    <MarketplaceAuthDialog key={authMode} open={authOpen} onOpenChange={setAuthOpen} initialMode={authMode} />
+  );
+
+  if (entitlement)
+    return (
+      <div className="access-owned" role="status">
+        <p className="access-owned-title">
+          <BookOpenCheck aria-hidden="true" /> In your library
+        </p>
+        <div className="access-owned-actions">
+          {hasFile && (
+            <Button disabled={busy} onClick={() => void doDownload()}>
+              {busy ? <LoaderCircle className="animate-spin" /> : <Download aria-hidden="true" />} Download
+            </Button>
+          )}
+          <Button asChild variant={hasFile ? "outline" : "default"}>
+            <Link to="/library">
+              <Library aria-hidden="true" /> Open my library
+            </Link>
+          </Button>
+        </div>
+        <p className="purchase-note">You can now leave a verified review below.</p>
+        {msg && <p className="purchase-note" role="alert">{msg}</p>}
+      </div>
     );
 
   if (priceCents > 0)
@@ -77,32 +145,50 @@ export function GuideAccessPanel({ guideId, priceCents, isSample }: { guideId: s
           No payment will be taken yet. After paying, you’ll get a download link by email that works for{" "}
           {PAID_LINK_HOURS} hours.
         </p>
+        {!user && ready && (
+          <Button variant="outline" onClick={() => openAuth("signin")}>
+            Sign in to save it for later
+          </Button>
+        )}
+        {authDialog}
+      </>
+    );
+
+  if (user)
+    return (
+      <>
+        <Button className="access-get" disabled={busy} onClick={() => void addToLibrary()}>
+          {busy ? <LoaderCircle className="animate-spin" /> : <Library aria-hidden="true" />} Get it free — add to my library
+        </Button>
+        <p className="purchase-note">Free. It’s saved to your account so you can open it any time and review it.</p>
+        {msg && <p className="get-form-error" role="alert">{msg}</p>}
       </>
     );
 
   return (
     <>
-      <GetByEmailForm guideId={guideId} defaultName={displayNameOf(user)} defaultEmail={user?.email ?? ""} />
-      {entitlement && (
-        <p className="purchase-note">
-          <span>
-            Already yours —{" "}
-            <button type="button" className="link-button" disabled={busy} onClick={() => void doDownload()}>
-              download now
-            </button>{" "}
-            or open <Link to="/library">your library</Link>.
-          </span>
-        </p>
+      <Button className="access-get" disabled={!ready} onClick={() => openAuth("signup")}>
+        <Library aria-hidden="true" /> Get it free with an account
+      </Button>
+      <p className="purchase-note">
+        <span>
+          Already have an account?{" "}
+          <button type="button" className="link-button" onClick={() => openAuth("signin")}>
+            Sign in
+          </button>
+          . Your account keeps it in your library and lets you leave a verified review.
+        </span>
+      </p>
+      {showEmail ? (
+        <GetByEmailForm guideId={guideId} defaultName="" defaultEmail="" />
+      ) : (
+        <button type="button" className="link-button access-email-toggle" onClick={() => setShowEmail(true)}>
+          <Mail aria-hidden="true" /> Or get a download link by email instead
+        </button>
       )}
-      {msg && <p className="purchase-note" role="status">{msg}</p>}
+      {authDialog}
     </>
   );
-}
-
-function displayNameOf(user: { user_metadata?: Record<string, unknown> } | null) {
-  const meta = user?.user_metadata ?? {};
-  const name = meta["full_name"] ?? meta["name"] ?? meta["display_name"];
-  return typeof name === "string" ? name : "";
 }
 
 function GetByEmailForm({ guideId, defaultName, defaultEmail }: { guideId: string; defaultName: string; defaultEmail: string }) {
